@@ -70,3 +70,8 @@ GROUP BY filter_field, keyword
 ORDER BY search_count DESC
 LIMIT %s;
 """
+
+years_max_min = """
+select max(year), min(year)
+from movies;
+"""

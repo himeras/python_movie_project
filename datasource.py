@@ -7,10 +7,10 @@ class Database:
         try:
             self.connection = mysql.connector.connect(**dbconfig)
             if self.connection.is_connected():
-                print("Connection established / Verbindung hergestellt")
+                print("Connection established")
                 self.cursor = self.connection.cursor()
         except Error as e:
-            print(f"Connection error/ Verbindungsfehler: {e}")
+            print(f"Connection error: {e}")
             self.connection = None
             self.cursor = None
 
