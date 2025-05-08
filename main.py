@@ -1,5 +1,5 @@
 from datasource import Database
-import massege_util
+import message_util
 import config
 import querie_constants as qc
 from mysql.connector import Error
@@ -56,6 +56,10 @@ def get_popular_requests(db, limit):
     return db.execute_query(qc.popular_requests, params=(limit,))
 
 
+def get_max_min_year(db):
+    return db.execute_query(qc.years_max_min)
+
+
 def main():
     dbconfig = {
         'host': config.host,
@@ -68,70 +72,73 @@ def main():
     db = Database(dbconfig)
     if db.connection is None:
         exit()
+    max_year, min_year = get_max_min_year(db)[0]
     first_movies = get_ten_movies_by_rating(db)
-    massege_util.print_films(first_movies)
+    message_util.print_films(first_movies)
     while True:
-        massege_util.print_commands()
+        message_util.print_commands()
         command = input("Your choice: ")
         try:
             if command == '1':
                 title = input("Enter the movie title: ")
                 movies = search_movies_by_title(db, title)
-                massege_util.print_films(movies)
+                message_util.print_films(movies)
 
             elif command == '2':
-                min_year = 2009
-                max_year = 2016
-                massege_util.print_genres()
+                message_util.print_genres()
                 genre = input("Enter the genre:  ").strip().capitalize()
-                if genre not in massege_util.genres:
-                    print(f'Invalid genre entered. / Ungültiges Genre eingegeben')
+                if genre not in message_util.emoji_map:
+                    message_util.print_error("genre")
                     continue
                 year = input(f"Enter the year from {min_year} to {max_year}: ")
                 if not year.isdigit():
-                    print(f'Invalid data entered. /  Falsche Daten eingegeben')
+                    message_util.print_error("data")
                     continue
                 year = int(year)
                 if year < min_year or year > max_year:
-                    print(f'Invalid data entered. /  Falsche Daten eingegeben')
+                    message_util.print_error("year")
                     continue
                 movies = search_movies_by_genre_and_year(db, genre, year)
-                massege_util.print_films(movies)
+                message_util.print_films(movies)
 
             elif command == '3':
                 rating = input("Enter the rating (0 - 10):  ").strip()
                 if not rating.replace(".", "", 1).isdigit():
-                    print(f'Invalid rating entered. /  Falsche Rating eingegeben')
+                    message_util.print_error("rating")
                     continue
                 rating = float(rating)
                 if not 0 <= rating <= 10:
-                    print(f'Invalid rating entered. /  Falsche Rating eingegeben')
+                    message_util.print_error("rating")
                     continue
                 movies = search_movies_by_rating(db, rating)
-                massege_util.print_films(movies)
+                message_util.print_films(movies)
 
             elif command == '4':
                 cast = input("Enter the cast:  ").strip().capitalize()
                 movies = search_movies_by_cast(db, cast)
-                massege_util.print_films(movies)
+                message_util.print_films(movies)
 
             elif command == '5':
                 keyword = input("Enter the keyword:  ").strip()
                 movies = search_movies_by_keyword(db, keyword)
-                massege_util.print_films(movies)
+                message_util.print_films(movies)
 
             elif command == '6':
                 requests = get_popular_requests(db, 10)
-                massege_util.print_requests(requests)
+                message_util.print_requests(requests)
 
             elif command == '7':
                 print("Exiting...")
                 break
 
             else:
+                print("+" * 100)
                 print("Invalid command. Please try again.")
+                print("+" * 100)
         except Error as e:
-            print(f"Connection error/ Verbindungsfehler: {e}")
+            print("+" * 100)
+            print(f"Connection error: {e}")
+            print("+" * 100)
             break
     db.close()
 
